@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-██╗    ██╗███╗   ██╗███████╗███████╗███████╗    ████████╗███████╗███████╗████████╗███████╗
-██║    ██║████╗  ██║██╔════╝██╔════╝██╔════╝    ╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██╔════╝
-██║ █╗ ██║██╔██╗ ██║█████╗  ███████╗███████╗       ██║   █████╗  ███████╗   ██║   ███████╗
-██║███╗██║██║╚██╗██║██╔══╝  ╚════██║╚════██║       ██║   ██╔══╝  ╚════██║   ██║   ╚════██║
-╚███╔███╔╝██║ ╚████║███████╗███████║███████║       ██║   ███████╗███████║   ██║   ███████║
- ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝╚══════╝╚══════╝       ╚═╝   ╚══════╝╚══════╝   ╚═╝   ╚══════╝
+██╗    ██╗███╗   ██╗██╗      █████╗  ██████╗███╗   ██╗    ████████╗ ██████╗ ██████╗  ██████╗
+██║    ██║████╗  ██║██║     ██╔══██╗██╔════╝████╗  ██║    ╚══██╔══╝██╔═══██╗██╔══██╗██╔═══██╗
+██║ █╗ ██║██╔██╗ ██║██║     ███████║██║     ██╔██╗ ██║       ██║   ██║   ██║██████╔╝██║   ██║
+██║███╗██║██║╚██╗██║██║     ██╔══██║██║     ██║╚██╗██║       ██║   ██║   ██║██╔══██╗██║   ██║
+╚███╔███╔╝██║ ╚████║███████╗██║  ██║╚██████╗██║ ╚████║       ██║   ╚██████╔╝██║  ██║╚██████╔╝
+ ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═══╝       ╚═╝    ╚═════╝ ╚═╝  ╚═╝ ╚═════╝
                                                                                           
 SUPER FERRAMENTA BRUTE FORCE - CYBERSECURITY PROFISSIONAL
 Desenvolvido por: Leonardo Pereira | Ethical Hacker
@@ -63,9 +63,9 @@ class SuperBruteForceProfessional:
         }
         
         # Instanciar classes internas
-        # self.HashCracker = self.HashCracker()
-        # self.PasswordGenerator = self.PasswordGenerator()
-        # self.NetworkAttacker = self.NetworkAttacker()
+        self.hash_cracker = self.HashCracker()
+        self.password_generator = self.PasswordGenerator()
+        self.network_attacker = self.NetworkAttacker()
         
     def print_banner(self):
         """Exibe banner profissional"""
@@ -138,23 +138,32 @@ class SuperBruteForceProfessional:
             if salt:
                 password = salt + password
             
-            if algorithm.lower() == 'md5':
-                for _ in range(iterations):
-                    password = hashlib.md5(password.encode()).hexdigest()
-            elif algorithm.lower() == 'sha1':
-                for _ in range(iterations):
-                    password = hashlib.sha1(password.encode()).hexdigest()
-            elif algorithm.lower() == 'sha256':
-                for _ in range(iterations):
-                    password = hashlib.sha256(password.encode()).hexdigest()
-            elif algorithm.lower() == 'sha512':
-                for _ in range(iterations):
-                    password = hashlib.sha512(password.encode()).hexdigest()
-            elif algorithm.lower() == 'ntlm':
-                import hashlib
-                password = hashlib.new('md4', password.encode('utf-16le')).hexdigest()
+            hashed_password = password
             
-            return password
+            try:
+                if algorithm.lower() == 'md5':
+                    for _ in range(iterations):
+                        hashed_password = hashlib.md5(hashed_password.encode()).hexdigest()
+                elif algorithm.lower() == 'sha1':
+                    for _ in range(iterations):
+                        hashed_password = hashlib.sha1(hashed_password.encode()).hexdigest()
+                elif algorithm.lower() == 'sha256':
+                    for _ in range(iterations):
+                        hashed_password = hashlib.sha256(hashed_password.encode()).hexdigest()
+                elif algorithm.lower() == 'sha512':
+                    for _ in range(iterations):
+                        hashed_password = hashlib.sha512(hashed_password.encode()).hexdigest()
+                elif algorithm.lower() == 'ntlm':
+                    # Import hashlib locally to avoid conflict
+                    hashed_password = hashlib.new('md4', password.encode('utf-16le')).hexdigest()
+                else:
+                    # Fallback to MD5 if unknown algorithm
+                    hashed_password = hashlib.md5(password.encode()).hexdigest()
+            except Exception as e:
+                print(f"Hash generation error: {e}")
+                return None
+            
+            return hashed_password
     
     class NetworkAttacker:
         """Módulo de ataques de rede"""
@@ -241,7 +250,7 @@ class SuperBruteForceProfessional:
             if rules is None:
                 rules = {
                     'min_length': 4,
-                    'max_length': 8,
+                    'max_length': 6,  # Reduzido para melhor performance
                     'use_lowercase': True,
                     'use_uppercase': True,
                     'use_digits': True,
@@ -257,7 +266,7 @@ class SuperBruteForceProfessional:
             if rules['use_digits']:
                 charset += string.digits
             if rules['use_special']:
-                charset += '!@#$%^&*()_+-=[]{}|;:,.<>?'
+                charset += '!@#$%'
             
             wordlist = []
             
@@ -268,15 +277,27 @@ class SuperBruteForceProfessional:
                 wordlist.append(word + '!')
                 wordlist.append(word.capitalize() + '123')
             
-            # Gera combinações
+            # Gera combinações (limitado para performance)
+            max_combinations = 50000
+            
             for length in range(rules['min_length'], rules['max_length'] + 1):
-                for combination in itertools.product(charset, repeat=length):
-                    wordlist.append(''.join(combination))
-
-                    if len(wordlist) > 100000:  # Reduzido de 1 milhão para 100k
-                        return wordlist
-
-            return wordlist  # Deve estar no mesmo nível que o for length, não dentro dele
+                # Para combinações muito grandes, usa amostragem
+                if len(charset) ** length > 50000:
+                    import random
+                    for _ in range(10000):
+                        attempt = ''.join(random.choice(charset) for _ in range(length))
+                        wordlist.append(attempt)
+                else:
+                    # Para combinações menores, gera todas
+                    for combination in itertools.product(charset, repeat=length):
+                        wordlist.append(''.join(combination))
+                        if len(wordlist) >= max_combinations:
+                            return wordlist[:max_combinations]
+                
+                if len(wordlist) >= max_combinations:
+                    break
+            
+            return list(set(wordlist))[:max_combinations]
     
         @staticmethod
         def create_targeted_wordlist(target_info=None):
@@ -313,6 +334,10 @@ class SuperBruteForceProfessional:
         """Ataque usando rainbow table"""
         print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Iniciando ataque com Rainbow Table...")
         
+        if not os.path.exists(rainbow_file):
+            print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} Rainbow table não encontrada. Criando uma nova...")
+            self.create_rainbow_table(rainbow_file)
+        
         conn = sqlite3.connect(rainbow_file)
         cursor = conn.cursor()
         
@@ -323,6 +348,7 @@ class SuperBruteForceProfessional:
         
         if result:
             print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Senha encontrada na rainbow table!")
+            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Senha: {result[0]}")
             return result[0]
         else:
             print(f"{Fore.RED}[-]{Style.RESET_ALL} Senha não encontrada na rainbow table")
@@ -335,16 +361,17 @@ class SuperBruteForceProfessional:
         
         # Carrega wordlist fornecida primeiro
         wordlist = []
-        if wordlist_file:
+        if wordlist_file and os.path.exists(wordlist_file):
             try:
                 with open(wordlist_file, 'r', encoding='utf-8', errors='ignore') as f:
                     wordlist = [line.strip() for line in f]
                 print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Palavras carregadas da wordlist: {len(wordlist)}")
-            except FileNotFoundError:
-                print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} Wordlist não encontrada, gerando automaticamente...")
-                wordlist = self.PasswordGenerator.generate_advanced_wordlist()
+            except Exception as e:
+                print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} Erro ao carregar wordlist: {e}")
+                print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} Gerando wordlist automaticamente...")
+                wordlist = self.password_generator.generate_advanced_wordlist()
         else:
-            wordlist = self.PasswordGenerator.generate_advanced_wordlist()
+            wordlist = self.password_generator.generate_advanced_wordlist()
         
         total_tested = 0
         found = None
@@ -354,10 +381,10 @@ class SuperBruteForceProfessional:
                 variations = self.generate_variations(base)
             else:
                 variations = self.apply_mask(base, mask_pattern)
-        
+            
             for variation in variations:
                 total_tested += 1
-                hashed = self.HashCracker.advanced_hash(variation, algorithm)
+                hashed = self.hash_cracker.advanced_hash(variation, algorithm)
                 
                 if total_tested % 1000 == 0:
                     print(f"\r{Fore.YELLOW}[*]{Style.RESET_ALL} Testadas: {total_tested} | Última: {variation[:20]}", end="")
@@ -369,9 +396,12 @@ class SuperBruteForceProfessional:
                     print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Tentativas: {total_tested}")
                     found = variation
                     break
-        
+            
             if found:
                 break
+        
+        if not found:
+            print(f"\n{Fore.RED}[-]{Style.RESET_ALL} Senha não encontrada no ataque híbrido")
         
         return found
     
@@ -379,25 +409,20 @@ class SuperBruteForceProfessional:
         """Aplica máscara a uma palavra"""
         variations = []
         
-        # Exemplo de máscara: "?u?l?l?l?d?d?d?s"
-        result = mask
-        replacements = {
-            '?l': word.lower() if word else '',
-            '?u': word.upper() if word else '',
-            '?d': '1234567890',
-            '?s': '!@#$%^&*',
-            '?a': string.ascii_letters + string.digits + string.punctuation
-        }
+        # Exemplo de máscara simples
+        if '?l' in mask:
+            variations.append(word.lower())
+        if '?u' in mask:
+            variations.append(word.upper())
+        if '?d' in mask:
+            for i in range(10):
+                variations.append(word + str(i))
+                variations.append(str(i) + word)
+        if '?s' in mask:
+            for special in ['!', '@', '#', '$', '%']:
+                variations.append(word + special)
+                variations.append(special + word)
         
-        for key, value in replacements.items():
-            if key in result:
-                if key in ['?l', '?u']:
-                    result = result.replace(key, value[:1] if value else '')
-                else:
-                    # Para padrões como ?d?d?d, gera combinações
-                    pass
-        
-        variations.append(result)
         return variations
     
     def generate_variations(self, word):
@@ -417,9 +442,9 @@ class SuperBruteForceProfessional:
         
         # Substituições leet speak
         leet = {'a': '4', 'e': '3', 'i': '1', 'o': '0', 's': '5', 't': '7'}
-        leet_word = word
+        leet_word = word.lower()
         for char, num in leet.items():
-            leet_word = leet_word.replace(char, num).replace(char.upper(), num)
+            leet_word = leet_word.replace(char, num)
         variations.append(leet_word)
         
         # Adição de caracteres especiais
@@ -429,28 +454,34 @@ class SuperBruteForceProfessional:
         
         return list(set(variations))  # Remove duplicatas
     
-    def distributed_attack(self, target_hash, algorithm='md5', nodes=4):
+    def distributed_attack(self, target_hash, algorithm='md5', nodes=2):
         """Simula ataque distribuído (multi-processos)"""
         print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Iniciando ataque distribuído com {nodes} núcleos...")
         
         charset = string.ascii_lowercase + string.digits
-        chunk_size = 100000
+        chunk_size = 10000
         
-        def worker(start_chars, result_queue):
+        def worker(start_char, result_queue):
             local_found = None
             local_tested = 0
             
-            for combo in itertools.product(charset, repeat=4):
-                if local_tested >= chunk_size:
-                    break
-                
-                attempt = ''.join(combo)
-                hashed = self.HashCracker.advanced_hash(attempt, algorithm)
-                local_tested += 1
-                
-                if hashed == target_hash:
-                    result_queue.put(attempt)
-                    return
+            # Testa combinações de 1-4 caracteres
+            for length in range(1, 5):
+                for combo in itertools.product(charset, repeat=length):
+                    if local_tested >= chunk_size:
+                        break
+                    
+                    attempt = ''.join(combo)
+                    # Filtra por caractere inicial para distribuição
+                    if start_char and not attempt.startswith(start_char):
+                        continue
+                    
+                    hashed = self.hash_cracker.advanced_hash(attempt, algorithm)
+                    local_tested += 1
+                    
+                    if hashed == target_hash:
+                        result_queue.put(attempt)
+                        return
             
             result_queue.put(None)
         
@@ -458,12 +489,16 @@ class SuperBruteForceProfessional:
         result_queue = multiprocessing.Queue()
         processes = []
         
-        for i in range(nodes):
-            p = multiprocessing.Process(target=worker, args=(charset[i::nodes], result_queue))
+        # Divide o trabalho por caracteres iniciais
+        chars_to_distribute = list(charset[:min(nodes, len(charset))])
+        
+        for i in range(min(nodes, len(chars_to_distribute))):
+            p = multiprocessing.Process(target=worker, args=(chars_to_distribute[i], result_queue))
             processes.append(p)
             p.start()
         
         # Aguarda resultados
+        found_password = None
         for p in processes:
             p.join()
         
@@ -471,47 +506,58 @@ class SuperBruteForceProfessional:
         while not result_queue.empty():
             result = result_queue.get()
             if result:
-                print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Senha encontrada: {result}")
-                return result
+                found_password = result
+                break
         
-        print(f"{Fore.RED}[-]{Style.RESET_ALL} Senha não encontrada")
-        return None
+        if found_password:
+            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Senha encontrada: {found_password}")
+        else:
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} Senha não encontrada")
+        
+        return found_password
     
     def intelligent_brute(self, target_hash, algorithm='md5', ai_model=None):
         """Brute force inteligente com aprendizado"""
         print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Iniciando brute force inteligente...")
         
         # Padrões comuns de senha
-        common_patterns = [
-            # Senhas baseadas em datas
-            lambda: [f"{d:02d}{m:02d}{y}" for y in range(1970, 2026) 
-                    for m in range(1, 13) for d in range(1, 32)],
-            
-            # Sequências de teclado
-            lambda: ['qwerty', 'qwerty123', 'asdfgh', 'zxcvbn', '1qaz2wsx'],
-            
-            # Senhas comuns
-            lambda: ['password', '123456', 'admin', 'welcome', 'monkey'],
-            
-            # Nomes comuns
-            lambda: ['john', 'jane', 'admin', 'user', 'test', 'guest']
-        ]
+        common_patterns = []
         
-        for pattern_gen in common_patterns:
-            for attempt in pattern_gen():
-                hashed = self.HashCracker.advanced_hash(attempt, algorithm)
-                self.attempts += 1
-                
-                if self.attempts % 100 == 0:
-                    elapsed = time.time() - self.start_time
-                    speed = self.attempts / elapsed if elapsed > 0 else 0
-                    print(f"\r{Fore.YELLOW}[*]{Style.RESET_ALL} Tentativas: {self.attempts} | "
-                          f"Velocidade: {speed:.0f}/s | Testando: {attempt}", end="")
-                
-                if hashed == target_hash:
-                    print(f"\n{Fore.GREEN}[+]{Style.RESET_ALL} SENHA ENCONTRADA!")
-                    return attempt
+        # Senhas baseadas em datas (limitado para performance)
+        for y in range(2020, 2025):
+            for m in range(1, 13):
+                for d in range(1, 32):
+                    common_patterns.append(f"{d:02d}{m:02d}{y}")
+                    common_patterns.append(f"{y}{m:02d}{d:02d}")
         
+        # Sequências de teclado
+        common_patterns.extend(['qwerty', 'qwerty123', 'asdfgh', 'zxcvbn', '1qaz2wsx'])
+        
+        # Senhas comuns
+        common_patterns.extend(['password', '123456', 'admin', 'welcome', 'monkey', 'letmein'])
+        
+        # Nomes comuns
+        common_patterns.extend(['john', 'jane', 'admin', 'user', 'test', 'guest', 'root'])
+        
+        # Testa cada padrão
+        for attempt in common_patterns:
+            self.attempts += 1
+            hashed = self.hash_cracker.advanced_hash(attempt, algorithm)
+            
+            if self.attempts % 100 == 0:
+                elapsed = time.time() - self.start_time if self.start_time else 0
+                speed = self.attempts / max(elapsed, 0.001)
+                print(f"\r{Fore.YELLOW}[*]{Style.RESET_ALL} Tentativas: {self.attempts} | "
+                      f"Velocidade: {speed:.0f}/s | Testando: {attempt}", end="")
+            
+            if hashed == target_hash:
+                print(f"\n{Fore.GREEN}[+]{Style.RESET_ALL} SENHA ENCONTRADA!")
+                print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Hash: {target_hash}")
+                print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Senha: {attempt}")
+                print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Tentativas: {self.attempts}")
+                return attempt
+        
+        print(f"\n{Fore.RED}[-]{Style.RESET_ALL} Senha não encontrada nos padrões comuns")
         return None
     
     def create_rainbow_table(self, output_file='rainbow.db', algorithm='md5'):
@@ -523,14 +569,14 @@ class SuperBruteForceProfessional:
         cursor.execute('''CREATE TABLE IF NOT EXISTS rainbow
                         (hash TEXT PRIMARY KEY, password TEXT)''')
         
-        # Gera hashes para senhas comuns
-        common_passwords = self.PasswordGenerator.generate_advanced_wordlist()
+        # Gera hashes para senhas comuns (limitado para performance)
+        common_passwords = self.password_generator.generate_advanced_wordlist()
         
         for i, password in enumerate(common_passwords):
             if i % 1000 == 0:
                 print(f"\r{Fore.YELLOW}[*]{Style.RESET_ALL} Processadas: {i}/{len(common_passwords)}", end="")
             
-            hashed = self.HashCracker.advanced_hash(password, algorithm)
+            hashed = self.hash_cracker.advanced_hash(password, algorithm)
             cursor.execute("INSERT OR IGNORE INTO rainbow VALUES (?, ?)", (hashed, password))
         
         conn.commit()
@@ -644,16 +690,18 @@ class SuperBruteForceProfessional:
         print(f"    5. Ative autenticação de dois fatores")
         print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
-    def simple_brute_force(self, target_hash, algorithm='md5', max_length=6):
+    def simple_brute_force(self, target_hash, algorithm='md5', max_length=5):
         """Brute force simples com comprimento máximo"""
         print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Iniciando brute force simples...")
         
         charset = string.ascii_lowercase + string.digits
         
         for length in range(1, max_length + 1):
+            print(f"{Fore.YELLOW}[*]{Style.RESET_ALL} Testando senhas com {length} caracteres...")
+            
             for combo in itertools.product(charset, repeat=length):
                 attempt = ''.join(combo)
-                hashed = self.HashCracker.advanced_hash(attempt, algorithm)
+                hashed = self.hash_cracker.advanced_hash(attempt, algorithm)
                 self.attempts += 1
                 
                 if self.attempts % 10000 == 0:
@@ -676,23 +724,27 @@ class SuperBruteForceProfessional:
         """Ataque de dicionário básico"""
         print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Iniciando ataque de dicionário...")
         
+        if not os.path.exists(wordlist_file):
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} Arquivo de wordlist não encontrado: {wordlist_file}")
+            return None
+        
         try:
             with open(wordlist_file, 'r', encoding='utf-8', errors='ignore') as f:
                 wordlist = [line.strip() for line in f]
-        except FileNotFoundError:
-            print(f"{Fore.RED}[-]{Style.RESET_ALL} Arquivo de wordlist não encontrado: {wordlist_file}")
+        except Exception as e:
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} Erro ao ler wordlist: {e}")
             return None
         
         print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Palavras carregadas: {len(wordlist)}")
         
-        for word in wordlist:
-            hashed = self.HashCracker.advanced_hash(word, algorithm)
+        for i, word in enumerate(wordlist):
+            hashed = self.hash_cracker.advanced_hash(word, algorithm)
             self.attempts += 1
             
-            if self.attempts % 1000 == 0:
+            if i % 1000 == 0:
                 elapsed = time.time() - self.start_time
-                speed = self.attempts / elapsed if elapsed > 0 else 0
-                print(f"\r{Fore.YELLOW}[*]{Style.RESET_ALL} Tentativas: {self.attempts} | "
+                speed = i / elapsed if elapsed > 0 else 0
+                print(f"\r{Fore.YELLOW}[*]{Style.RESET_ALL} Testadas: {i}/{len(wordlist)} | "
                       f"Velocidade: {speed:.0f}/s | Testando: {word[:30]}", end="")
             
             if hashed == target_hash:
@@ -705,7 +757,40 @@ class SuperBruteForceProfessional:
         print(f"\n{Fore.RED}[-]{Style.RESET_ALL} Senha não encontrada na wordlist")
         return None
 
+def check_dependencies():
+    """Verifica e instala dependências automaticamente"""
+    required = {
+        'paramiko': 'paramiko',
+        'requests': 'requests', 
+        'colorama': 'colorama'
+    }
+    
+    missing = []
+    for module_name, package_name in required.items():
+        try:
+            __import__(module_name)
+        except ImportError:
+            missing.append(package_name)
+    
+    if missing:
+        print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} Dependências faltando: {', '.join(missing)}")
+        print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Tentando instalar automaticamente...")
+        
+        try:
+            import subprocess
+            subprocess.check_call([sys.executable, "-m", "pip", "install"] + missing)
+            print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Dependências instaladas com sucesso!")
+            # Reinicia o script para carregar os módulos
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+        except Exception as e:
+            print(f"{Fore.RED}[-]{Style.RESET_ALL} Falha ao instalar dependências: {e}")
+            print(f"{Fore.YELLOW}[!]{Style.RESET_ALL} Instale manualmente: pip install {' '.join(missing)}")
+            sys.exit(1)
+
 def main():
+    # Verificar dependências primeiro
+    check_dependencies()
+    
     parser = argparse.ArgumentParser(
         description='VULCAN - Super Ferramenta Brute Force Professional',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -744,12 +829,14 @@ ATENÇÃO: Use apenas em sistemas próprios ou com autorização explícita!
     # Opções avançadas
     parser.add_argument('--create-rainbow', action='store_true',
                        help='Criar rainbow table')
-    parser.add_argument('--nodes', type=int, default=4,
+    parser.add_argument('--nodes', type=int, default=2,
                        help='Número de núcleos para ataque distribuído')
     parser.add_argument('--export', choices=['json', 'csv', 'html'],
                        help='Exportar resultados em formato específico')
     parser.add_argument('--no-report', action='store_true',
                        help='Não gerar relatório final')
+    parser.add_argument('--max-length', type=int, default=5,
+                       help='Comprimento máximo para brute force simples')
     
     args = parser.parse_args()
     
@@ -767,11 +854,12 @@ ATENÇÃO: Use apenas em sistemas próprios ou com autorização explícita!
         
         if args.hash:
             print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Alvo identificado: {args.hash}")
-            hash_type = SuperBruteForceProfessional.HashCracker.identify_hash(args.hash)
+            hash_type = tool.hash_cracker.identify_hash(args.hash)
             print(f"{Fore.CYAN}[*]{Style.RESET_ALL} Tipo de hash detectado: {hash_type}")
             
+            result = None
             if args.mode == 'simple':
-                result = tool.simple_brute_force(args.hash, algorithm=args.algorithm)
+                result = tool.simple_brute_force(args.hash, algorithm=args.algorithm, max_length=args.max_length)
             elif args.mode == 'dictionary':
                 if not args.wordlist:
                     print(f"{Fore.RED}[-]{Style.RESET_ALL} Wordlist necessária para modo dicionário")
@@ -807,11 +895,15 @@ ATENÇÃO: Use apenas em sistemas próprios ou com autorização explícita!
                     print(f"{Fore.RED}[-]{Style.RESET_ALL} Username e wordlist necessários para SSH")
                     sys.exit(1)
                 
-                results = tool.NetworkAttacker.ssh_brute(
+                results = tool.network_attacker.ssh_brute(
                     args.target, args.port or 22, args.username, args.wordlist
                 )
             elif args.service == 'ftp':
-                results = tool.NetworkAttacker.ftp_brute(
+                if not args.username or not args.wordlist:
+                    print(f"{Fore.RED}[-]{Style.RESET_ALL} Username e wordlist necessários para FTP")
+                    sys.exit(1)
+                
+                results = tool.network_attacker.ftp_brute(
                     args.target, args.port or 21, args.username, args.wordlist
                 )
             
@@ -848,13 +940,4 @@ ATENÇÃO: Use apenas em sistemas próprios ou com autorização explícita!
         traceback.print_exc()
 
 if __name__ == "__main__":
-    # Verificar dependências
-    try:
-        import paramiko
-        import requests
-        from colorama import init
-    except ImportError:
-        print("Instalando dependências necessárias...")
-        os.system("pip install paramiko requests colorama")
-    
     main()
